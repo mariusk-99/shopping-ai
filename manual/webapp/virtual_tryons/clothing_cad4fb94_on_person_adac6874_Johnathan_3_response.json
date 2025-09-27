@@ -1,0 +1,13 @@
+{
+  "clothing_image": "webapp/uploads/clothing_cad4fb94.jpg",
+  "person_image": "webapp/uploads/person_adac6874_Johnathan_3.jpg",
+  "product_type": "clothing item",
+  "style_preference": "natural and realistic",
+  "custom_prompt": null,
+  "response": {
+    "success": false,
+    "error": "('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))",
+    "status_code": null
+  },
+  "timestamp": 1758987652.062446
+}

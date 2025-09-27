@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Try-On - AI Fashion Assistant</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .upload-zone {
+            border: 2px dashed #d1d5db;
+            transition: all 0.3s ease;
+        }
+
+        .upload-zone:hover {
+            border-color: #667eea;
+            background-color: #f8faff;
+        }
+
+        .upload-zone.drag-over {
+            border-color: #667eea;
+            background-color: #eef2ff;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <div class="gradient-bg shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold text-white mb-2">
+                    <i class="fas fa-magic mr-3"></i>Virtual Try-On
+                </h1>
+                <p class="text-white text-lg opacity-90">See how clothes look on you with AI technology</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="mb-6">
+            {% for category, message in messages %}
+            <div
+                class="p-4 mb-4 rounded-lg {% if category == 'error' %}bg-red-100 border border-red-400 text-red-700{% else %}bg-green-100 border border-green-400 text-green-700{% endif %}">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        {% if category == 'error' %}
+                        <i class="fas fa-exclamation-circle"></i>
+                        {% else %}
+                        <i class="fas fa-check-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium">{{ message }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Upload Form -->
+        <div class="max-w-4xl mx-auto">
+            <form method="post" action="{{ url_for('upload_file') }}" enctype="multipart/form-data" class="space-y-8">
+
+                <!-- Person Photo Upload -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-user-circle text-blue-500 mr-2"></i>
+                        1. Upload Your Photo
+                    </h2>
+                    <p class="text-gray-600 mb-6">Upload a clear, front-facing photo of yourself for the best results.
+                    </p>
+
+                    <div class="upload-zone rounded-lg p-8 text-center" id="person-upload-zone">
+                        <input type="file" name="person_photo" id="person_photo" accept=".png,.jpg,.jpeg,.webp,.gif"
+                            required class="hidden">
+                        <div id="person-upload-content">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-lg text-gray-600 mb-2">Click to upload or drag and drop</p>
+                            <p class="text-sm text-gray-500">PNG, JPG, JPEG, WebP or GIF (MAX. 16MB)</p>
+                        </div>
+                        <div id="person-preview" class="hidden">
+                            <img id="person-preview-img" class="mx-auto max-h-64 rounded-lg shadow-md">
+                            <p class="mt-2 text-sm text-gray-600">
+                                <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                                Photo uploaded successfully
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Photo Guidelines -->
+                    <div class="mt-4 bg-blue-50 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold text-blue-800 mb-2">
+                            <i class="fas fa-lightbulb mr-1"></i>Photo Tips for Best Results:
+                        </h3>
+                        <ul class="text-sm text-blue-700 space-y-1">
+                            <li>• Stand facing the camera directly</li>
+                            <li>• Use good lighting (natural light works best)</li>
+                            <li>• Wear fitted clothing or simple outfit</li>
+                            <li>• Keep arms slightly away from your body</li>
+                            <li>• Use a simple, uncluttered background</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Clothing URL Input -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-tshirt text-purple-500 mr-2"></i>
+                        2. Add Clothing Item
+                    </h2>
+                    <p class="text-gray-600 mb-6">Paste a direct link to the clothing image you want to try on.</p>
+
+                    <div class="space-y-4">
+                        <input type="url" name="clothing_url" id="clothing_url"
+                            placeholder="https://example.com/clothing-image.jpg" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+
+                        <div id="clothing-preview" class="hidden bg-gray-50 rounded-lg p-4">
+                            <img id="clothing-preview-img" class="mx-auto max-h-64 rounded-lg shadow-md">
+                            <p class="mt-2 text-center text-sm text-gray-600">
+                                <i class="fas fa-check-circle text-green-500 mr-1"></i>
+                                Clothing image loaded successfully
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- URL Guidelines -->
+                    <div class="mt-4 bg-purple-50 rounded-lg p-4">
+                        <h3 class="text-sm font-semibold text-purple-800 mb-2">
+                            <i class="fas fa-info-circle mr-1"></i>Image URL Guidelines:
+                        </h3>
+                        <ul class="text-sm text-purple-700 space-y-1">
+                            <li>• Use direct image URLs ending in .jpg, .png, .webp, etc.</li>
+                            <li>• Works with Nike, Zara, H&M, and most shopping sites</li>
+                            <li>• Right-click on product images and "Copy image address"</li>
+                            <li>• Ensure the URL shows the image directly when opened</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button type="submit" id="submit-btn"
+                        class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-300 shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-magic mr-2"></i>
+                        <span id="submit-text">Create Virtual Try-On</span>
+                        <span id="loading-text" class="hidden">Processing...</span>
+                    </button>
+                    <p class="mt-2 text-sm text-gray-500">This may take 30-60 seconds to process</p>
+                </div>
+            </form>
+        </div>
+
+        <!-- How It Works -->
+        <div class="mt-16 max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">How It Works</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-camera text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Upload Your Photo</h3>
+                    <p class="text-gray-600">Upload a clear photo of yourself following our guidelines for best results.
+                    </p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-purple-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-link text-2xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Add Clothing Link</h3>
+                    <p class="text-gray-600">Paste a direct image URL of the clothing item you want to try on.</p>
+                </div>
+                <div class="text-center">
+                    <div class="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-sparkles text-2xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">AI Analysis</h3>
+                    <p class="text-gray-600">Our AI analyzes how the clothing would look on you with detailed feedback.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // File upload handling
+        const personUploadZone = document.getElementById('person-upload-zone');
+        const personInput = document.getElementById('person_photo');
+        const personUploadContent = document.getElementById('person-upload-content');
+        const personPreview = document.getElementById('person-preview');
+        const personPreviewImg = document.getElementById('person-preview-img');
+
+        // Clothing URL preview
+        const clothingUrlInput = document.getElementById('clothing_url');
+        const clothingPreview = document.getElementById('clothing-preview');
+        const clothingPreviewImg = document.getElementById('clothing-preview-img');
+
+        // Submit button
+        const submitBtn = document.getElementById('submit-btn');
+        const submitText = document.getElementById('submit-text');
+        const loadingText = document.getElementById('loading-text');
+
+        // Handle person photo upload
+        personUploadZone.addEventListener('click', () => personInput.click());
+
+        personUploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            personUploadZone.classList.add('drag-over');
+        });
+
+        personUploadZone.addEventListener('dragleave', () => {
+            personUploadZone.classList.remove('drag-over');
+        });
+
+        personUploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            personUploadZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                personInput.files = files;
+                handlePersonFileSelect();
+            }
+        });
+
+        personInput.addEventListener('change', handlePersonFileSelect);
+
+        function handlePersonFileSelect() {
+            const file = personInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    personPreviewImg.src = e.target.result;
+                    personUploadContent.classList.add('hidden');
+                    personPreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Handle clothing URL preview
+        clothingUrlInput.addEventListener('input', function () {
+            const url = this.value.trim();
+            if (url && (url.includes('.jpg') || url.includes('.png') || url.includes('.webp') || url.includes('.jpeg'))) {
+                clothingPreviewImg.src = url;
+                clothingPreviewImg.onload = () => {
+                    clothingPreview.classList.remove('hidden');
+                };
+                clothingPreviewImg.onerror = () => {
+                    clothingPreview.classList.add('hidden');
+                };
+            } else {
+                clothingPreview.classList.add('hidden');
+            }
+        });
+
+        // Handle form submission
+        document.querySelector('form').addEventListener('submit', function () {
+            submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            loadingText.classList.remove('hidden');
+        });
+    </script>
+</body>
+
+</html>
