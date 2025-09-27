@@ -1,0 +1,12 @@
+Product: Men's Open
+URL: https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/931da913-f019-47f8-bc66-b909156bdab2/M+NK+CLUB+BB+OH+PANT.png
+--------------------------------------------------
+Product: alpha	Size Guide	XS
+URL: https://static.nike.com/a/images/t_PDP_936_v1/f_auto,q_auto:eco/931da913-f019-47f8-bc66-b909156bdab2/M+NK+CLUB+BB+OH+PANT.png
+--------------------------------------------------
+Product: css	Add to Bag
+URL: https://static.nike.com/a/images/t_PDP_144_v1/f_auto,q_auto:eco/8ef0888e-c680-4d24-aea7-4d908cf1f603/M+NK+CLUB+BB+OH+PANT.png
+--------------------------------------------------
+Product: css	Add to Bag
+URL: https://static.nike.com/a/images/t_PDP_144_v1/f_auto,q_auto:eco/776612b7-8db3-4af2-ac84-cf3746538d3c/M+NK+CLUB+BB+OH+PANT.png
+--------------------------------------------------

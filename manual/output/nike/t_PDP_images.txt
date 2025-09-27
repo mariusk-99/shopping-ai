@@ -1,0 +1,12 @@
+Product: png	Highly Rated	https
+URL: https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/e4fb1f97-3315-45f5-9249-6d4262a1de19/M+NK+DF+FORM+HD+JKT.png
+--------------------------------------------------
+Product: Select Size	Size Guide	https
+URL: https://static.nike.com/a/images/t_PDP_936_v1/f_auto,q_auto:eco/e4fb1f97-3315-45f5-9249-6d4262a1de19/M+NK+DF+FORM+HD+JKT.png
+--------------------------------------------------
+Product: css	Add to Bag
+URL: https://static.nike.com/a/images/t_PDP_144_v1/f_auto,q_auto:eco/dbd84a29-f911-4b6a-89c6-56b2f13cd558/M+NK+DF+FORM+HD+JKT.png
+--------------------------------------------------
+Product: zip keeps your essentials close with
+URL: https://static.nike.com/a/images/t_PDP_144_v1/f_auto,q_auto:eco/2ef0ae29-ff11-4b8c-9f62-a78a76bcdc90/M+NK+DF+FORM+HD+JKT.png
+--------------------------------------------------
