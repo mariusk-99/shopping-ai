@@ -1,0 +1,1 @@
+# Shopping AI - tomoro hackathon
