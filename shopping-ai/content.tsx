@@ -3,7 +3,54 @@ import React, { useState, useEffect } from "react";
 // Simple SVG icons as React components (typed)
 const CheckCircle: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className, style }) => (
   <svg className={className} style={style} fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414          {/* Slayy's Shopping Advice Section */}
+        <div style={sectionStyle}>
+          <div style={titleStyle}>💅 Slayy's Shopping Advice</div>
+          {isLoading ? (
+            <div style={{
+              padding: '16px',
+              backgroundColor: '#f3f4f6',
+              borderRadius: '8px',
+              animation: 'shimmer 1.5s infinite linear'
+            }}>
+              Analyzing product details...
+            </div>
+          ) : analysisData ? (
+            <div style={{
+              backgroundColor: '#fdf4ff',
+              borderRadius: '8px',
+              padding: '16px',
+              border: '1px solid #f5d0fe'
+            }}>
+              <p style={{ fontSize: '14px', lineHeight: '1.6', color: '#581c87' }}>
+                {analysisData.analysis}
+              </p>
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '8px',
+                marginTop: '12px'
+              }}>
+                {analysisData.tags.map((tag, index) => (
+                  <span key={index} style={{
+                    backgroundColor: '#f3e8ff',
+                    color: '#6b21a8',
+                    padding: '4px 8px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    border: '1px solid #e9d5ff'
+                  }}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+          {/* Safety Section */}
+        <div style={sectionStyle}>
+          <div style={titleStyle}>Shopping Safety</div>414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
   </svg>
 );
 
@@ -37,12 +84,20 @@ const X: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ clas
 // Configuration for the content script - only run on specific shopping sites
 export const config = {
   matches: [
-    "https://www.nike.com/*",
-    "https://www.shein.co.uk/*"
+    "https://www.nike.com/gb/t/club-open-hem-fleece-trousers-k62luLev/FN3730-063",
+    "https://www.shein.co.uk/goods-p-158264809.html*"
   ],
   all_frames: false,
   run_at: "document_end"
 };
+
+interface ProductAnalysis {
+  url: string;
+  analysis: string;
+  tags: string[];
+  timestamp: number;
+  brand: 'nike' | 'shein';
+}
 
 type SafetyStatus = "safe" | "caution" | "unsafe";
 
@@ -137,12 +192,45 @@ const getCurrentBrand = (url: string): 'nike' | 'shein' | null => {
   return null;
 };
 
+// Send analysis data to the popup
+const sendAnalysisData = () => {
+  const currentUrl = window.location.href.split('?')[0]; // Remove query parameters
+  const analysisData = productAnalyses[currentUrl];
+
+  if (analysisData) {
+    const event = new CustomEvent("shoppingAiAnalysis", {
+      detail: analysisData
+    });
+    window.dispatchEvent(event);
+    console.log("Shopping AI: Sending analysis data", analysisData);
+  }
+};
+
 const WebsiteSafetyExtension: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false); // Start hidden
   const [isLoading, setIsLoading] = useState(true);
   const [safetyData, setSafetyData] = useState<SafetyData | null>(null);
   const [mediaLoading, setMediaLoading] = useState(true);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  const [analysisData, setAnalysisData] = useState<ProductAnalysis | null>(null);
+
+  // Predefined product analyses
+  const productAnalyses: Record<string, ProductAnalysis> = {
+    "https://www.nike.com/gb/t/club-open-hem-fleece-trousers-k62luLev/FN3730-063": {
+      url: "https://www.nike.com/gb/t/club-open-hem-fleece-trousers-k62luLev/FN3730-063",
+      analysis: "The reviews are mostly positive, with shoppers praising the comfort, fit, and style of the products. Many highlight that items are true to size, soft, and well-organized in stores, which makes shopping easier. Several customers bought the products for teenagers or grandkids, who also liked them. A few people mentioned they would repurchase in other colors. However, there is one very negative review that criticizes the material, sizing, and comfort, noting that even sizing up did not help. Overall, the feedback shows strong satisfaction with quality and comfort, though sizing consistency may be an issue for some customers.",
+      tags: ["Comfortable", "True to Size", "Well-Organized", "Size Consistency Varies"],
+      timestamp: Date.now(),
+      brand: "nike"
+    },
+    "https://www.shein.co.uk/goods-p-158264809.html": {
+      url: "https://www.shein.co.uk/goods-p-158264809.html",
+      analysis: "Product analysis coming soon",
+      tags: [],
+      timestamp: Date.now(),
+      brand: "shein"
+    }
+  };
 
   // Add CSS animations for shimmer loading - MUST be at top level
   React.useEffect(() => {

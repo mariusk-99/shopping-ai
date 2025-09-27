@@ -1,0 +1,32 @@
+{
+  "name": "Shopping AI Assistant",
+  "description": "AI-powered shopping assistant for Nike and Shein products",
+  "version": "0.0.1",
+  "manifest_version": 3,
+  "icons": {
+    "16": "assets/icon16.png",
+    "32": "assets/icon32.png",
+    "48": "assets/icon48.png",
+    "128": "assets/icon128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://www.nike.com/*",
+    "https://www.shein.co.uk/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.nike.com/gb/t/club-open-hem-fleece-trousers-k62luLev/FN3730-063",
+        "https://www.shein.co.uk/goods-p-158264809.html*"
+      ],
+      "js": ["content.ts"]
+    }
+  ]
+}
