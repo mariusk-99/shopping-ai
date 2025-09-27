@@ -1,0 +1,13 @@
+{
+  "clothing_image": "images/nike2/other/M+NK+TECH+WVN+PANT+OS+GX+AOP.jpg",
+  "person_image": "person_photos/Johnathan 2.jpg",
+  "product_type": "pants",
+  "style_preference": "natural and realistic",
+  "custom_prompt": null,
+  "response": {
+    "success": false,
+    "error": "('Connection aborted.', ConnectionResetError(54, 'Connection reset by peer'))",
+    "status_code": null
+  },
+  "timestamp": 1758984666.848894
+}
