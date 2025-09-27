@@ -173,7 +173,9 @@ const brandAssets = {
       nikeImage2,
       nikeImage3
     ],
-    videos: []
+    videos: [
+      getAssetURL("assets/nike/Generated File September 27, 2025 - 2_09PM.mp4")
+    ]
   },
   shein: {
     images: [
@@ -501,23 +503,51 @@ const WebsiteSafetyExtension: React.FC = () => {
         {/* Media Section */}
         <div style={sectionStyle}>
           <div style={titleStyle}>Style Check - Will you slay in this?</div>
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ 
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%'
+          }}>
             {(() => {
               const allMedia = getAllMedia();
               const currentMedia = allMedia[currentMediaIndex];
               
               return (
-                <div style={{ position: 'relative' }}>
-                  {/* Media container with shimmer loading */}
+                <div style={{ 
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  minHeight: '400px',
+                  padding: '20px 0'
+                }}>
+                  {/* Carousel Container */}
                   <div style={{
-                    width: '200px',
-                    height: '200px',
-                    borderRadius: '8px',
-                    border: '2px solid #e5e7eb',
-                    margin: '0 auto',
                     position: 'relative',
-                    overflow: 'hidden'
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                    maxWidth: '360px',
+                    margin: '0 auto'
                   }}>
+                    {/* Media container with enhanced styling */}
+                    <div style={{
+                      width: '280px',
+                      height: '320px',
+                      borderRadius: '20px',
+                      border: 'none',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15), 0 10px 20px rgba(0, 0, 0, 0.1)',
+                      background: 'linear-gradient(145deg, #ffffff, #f8f9fa)',
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transform: 'perspective(1000px) rotateX(2deg)',
+                    }}>
                     {/* Shimmer loading overlay */}
                     {mediaLoading && (
                       <div style={{
@@ -526,10 +556,10 @@ const WebsiteSafetyExtension: React.FC = () => {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
-                        backgroundSize: '200% 100%',
-                        animation: 'shimmer 1.5s infinite',
-                        borderRadius: '6px'
+                        background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%)',
+                        backgroundSize: '200% 200%',
+                        animation: 'shimmer 2s ease-in-out infinite',
+                        borderRadius: '20px'
                       }}></div>
                     )}
                     
@@ -543,7 +573,8 @@ const WebsiteSafetyExtension: React.FC = () => {
                               width: '100%',
                               height: '100%',
                               objectFit: 'cover',
-                              borderRadius: '6px'
+                              borderRadius: '20px',
+                              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                             }}
                             controls
                             autoPlay
@@ -558,7 +589,18 @@ const WebsiteSafetyExtension: React.FC = () => {
                               width: '100%',
                               height: '100%',
                               objectFit: 'cover',
-                              borderRadius: '6px'
+                              borderRadius: '20px',
+                              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                            }}
+                            onLoad={() => {
+                              // Add subtle scale animation on load
+                              const img = document.querySelector('img[src="' + currentMedia + '"]') as HTMLElement;
+                              if (img) {
+                                img.style.transform = 'scale(1.02)';
+                                setTimeout(() => {
+                                  img.style.transform = 'scale(1)';
+                                }, 200);
+                              }
                             }}
                           />
                         )}
@@ -566,68 +608,132 @@ const WebsiteSafetyExtension: React.FC = () => {
                     )}
                   </div>
                   
-                  {/* Navigation buttons */}
+                    {/* Enhanced Navigation buttons */}
+                    {!mediaLoading && allMedia.length > 1 && (
+                      <>
+                        <button
+                          onClick={prevMedia}
+                          style={{
+                            position: 'absolute',
+                            left: '-50px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                          width: '44px',
+                          height: '44px',
+                          borderRadius: '22px',
+                          border: 'none',
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          color: '#374151',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '20px',
+                          fontWeight: 'bold',
+                          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15), 0 3px 10px rgba(0, 0, 0, 0.1)',
+                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          backdropFilter: 'blur(10px)',
+                          zIndex: 10
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                        }}
+                      >
+                        ←
+                      </button>
+                        <button
+                          onClick={nextMedia}
+                          style={{
+                            position: 'absolute',
+                            right: '-50px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                          width: '44px',
+                          height: '44px',
+                          borderRadius: '22px',
+                          border: 'none',
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          color: '#374151',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '20px',
+                          fontWeight: 'bold',
+                          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15), 0 3px 10px rgba(0, 0, 0, 0.1)',
+                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          backdropFilter: 'blur(10px)',
+                          zIndex: 10
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)';
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+                        }}
+                      >
+                            →
+                          </button>
+                        </>
+                      )}
+                  </div>
+                  
+                  {/* Enhanced dot indicators */}
                   {!mediaLoading && allMedia.length > 1 && (
-                    <>
-                      <button
-                        onClick={prevMedia}
-                        style={{
-                          position: 'absolute',
-                          left: '-20px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '50%',
-                          border: 'none',
-                          backgroundColor: 'rgba(0,0,0,0.7)',
-                          color: 'white',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '16px'
-                        }}
-                      >
-                        ‹
-                      </button>
-                      <button
-                        onClick={nextMedia}
-                        style={{
-                          position: 'absolute',
-                          right: '-20px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '50%',
-                          border: 'none',
-                          backgroundColor: 'rgba(0,0,0,0.7)',
-                          color: 'white',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '16px'
-                        }}
-                      >
-                        ›
-                      </button>
-                    </>
+                    <div style={{
+                      display: 'flex',
+                      gap: '8px',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginTop: '20px',
+                      width: '100%'
+                    }}>
+                      {allMedia.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentMediaIndex(index)}
+                          style={{
+                            width: index === currentMediaIndex ? '24px' : '8px',
+                            height: '8px',
+                            borderRadius: '4px',
+                            border: 'none',
+                            backgroundColor: index === currentMediaIndex ? '#8b5cf6' : '#d1d5db',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            opacity: index === currentMediaIndex ? 1 : 0.6
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Enhanced Media counter */}
+                  {!mediaLoading && (
+                    <div style={{ 
+                      marginTop: '12px', 
+                      fontSize: '13px', 
+                      color: '#8b5cf6',
+                      fontWeight: '500',
+                      letterSpacing: '0.5px',
+                      textAlign: 'center',
+                      width: '100%'
+                    }}>
+                      {(() => {
+                        const allMedia = getAllMedia();
+                        return `${currentMediaIndex + 1} of ${allMedia.length}`;
+                      })()}
+                    </div>
                   )}
                 </div>
               );
             })()}
-            
-            {/* Media counter */}
-            {!mediaLoading && (
-              <div style={{ marginTop: '8px', fontSize: '12px', color: '#6b7280' }}>
-                {(() => {
-                  const allMedia = getAllMedia();
-                  return `${currentMediaIndex + 1} of ${allMedia.length}`;
-                })()}
-              </div>
-            )}
           </div>
         </div>
 
