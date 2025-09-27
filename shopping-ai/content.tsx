@@ -34,9 +34,12 @@ const X: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ clas
   </svg>
 );
 
-// Configuration for the content script (move to a separate file if needed)
+// Configuration for the content script - only run on specific shopping sites
 export const config = {
-  matches: ["<all_urls>"],
+  matches: [
+    "https://www.nike.com/*",
+    "https://www.shein.co.uk/*"
+  ],
   all_frames: false,
   run_at: "document_end"
 };
@@ -50,48 +53,140 @@ interface SafetyData {
   details: string;
 }
 
-// Mock function to simulate loading and determine website safety
+// Analyze website safety for shopping sites
 const getWebsiteSafety = async (url: string): Promise<SafetyData> => {
   // Simulate loading delay
   await new Promise(resolve => setTimeout(resolve, 1500));
   
   const domain = new URL(url).hostname;
   
-  if (domain.includes("bank") || domain.includes("gov") || domain.includes("edu")) {
+  // Nike - Premium brand, generally safe
+  if (domain.includes("nike.com")) {
     return {
       status: "safe",
       confidence: 95,
       threats: [],
-      details: "This website appears to be legitimate and secure."
+      details: "Nike is a trusted global brand with secure shopping experience."
     };
-  } else if (domain.includes("unknown") || domain.includes("suspicious") || domain.includes("ads")) {
+  } 
+  // Shein - Fast fashion retailer, generally safe but with some considerations
+  else if (domain.includes("shein.co.uk")) {
     return {
       status: "caution",
-      confidence: 60,
-      threats: ["Suspicious redirects", "Unknown reputation"],
-      details: "Exercise caution when sharing personal information."
+      confidence: 75,
+      threats: ["Fast fashion concerns", "Environmental impact"],
+      details: "Shein is a legitimate retailer, but consider sustainability and quality factors."
     };
-  } else {
+  } 
+  // Fallback for other domains
+  else {
     return {
       status: "unsafe",
       confidence: 85,
-      threats: ["Phishing attempt", "Malicious content", "Data harvesting"],
+      threats: ["Unknown retailer", "Potential security risks"],
       details: "This website may pose security risks. Avoid sharing sensitive data."
     };
   }
 };
 
 
+// Helper function to get asset URL
+const getAssetURL = (path: string): string => {
+  try {
+    return chrome.runtime.getURL(path);
+  } catch (error) {
+    // Fallback for development
+    return path;
+  }
+};
+
+// Media assets for each brand - using chrome extension asset paths
+const brandAssets = {
+  nike: {
+    images: [
+      getAssetURL("assets/nike/Gemini_Generated_Image_alooralooraloora.png"),
+      getAssetURL("assets/nike/Gemini_Generated_Image_oafcb5oafcb5oafc.png")
+    ],
+    videos: [
+      getAssetURL("assets/nike/Generated File September 27, 2025 - 2_02PM.mp4"),
+      getAssetURL("assets/nike/Generated File September 27, 2025 - 2_09PM.mp4")
+    ]
+  },
+  shein: {
+    images: [
+      getAssetURL("assets/shein/Gemini_Generated_Image_iqwxnliqwxnliqwx (1).png"),
+      getAssetURL("assets/shein/Gemini_Generated_Image_iqwxnliqwxnliqwx.png")
+    ],
+    videos: []
+  }
+};
+
+// Check if current URL matches the specific product pages
+const isTargetProductPage = (url: string): boolean => {
+  // Check for specific product identifiers in the URL
+  const nikeProductId = "club-open-hem-fleece-trousers-k62luLev/FN3730-063";
+  const sheinProductId = "goods-p-158264809.html";
+  
+  return url.includes(nikeProductId) || url.includes(sheinProductId);
+};
+
+// Get current brand based on URL
+const getCurrentBrand = (url: string): 'nike' | 'shein' | null => {
+  if (url.includes("nike.com")) return 'nike';
+  if (url.includes("shein.co.uk")) return 'shein';
+  return null;
+};
+
 const WebsiteSafetyExtension: React.FC = () => {
-  const [isVisible, setIsVisible] = useState(true);
+  const [isVisible, setIsVisible] = useState(false); // Start hidden
   const [isLoading, setIsLoading] = useState(true);
   const [safetyData, setSafetyData] = useState<SafetyData | null>(null);
+  const [mediaLoading, setMediaLoading] = useState(true);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+
+  // Add CSS animations for shimmer loading - MUST be at top level
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
+    };
+  }, []);
 
   useEffect(() => {
+    console.log("🔥 Slayy Extension - Script loaded!");
+    
+    const currentUrl = window.location.href;
+    
+    // Debug: Log current URL and check result
+    console.log("🌐 Slayy Extension - Current URL:", currentUrl);
+    console.log("🔍 Slayy Extension - URL includes nike.com:", currentUrl.includes("nike.com"));
+    console.log("🔍 Slayy Extension - URL includes shein.co.uk:", currentUrl.includes("shein.co.uk"));
+    console.log("🎯 Slayy Extension - Is target page:", isTargetProductPage(currentUrl));
+    
+    // TEMPORARY: Show on any Nike or Shein page for testing
+    const isNikeOrShein = currentUrl.includes("nike.com") || currentUrl.includes("shein.co.uk");
+    
+    if (!isNikeOrShein) {
+      console.log("❌ Slayy Extension - Not Nike or Shein, hiding extension");
+      setIsVisible(false);
+      return;
+    }
+
+    console.log("✅ Slayy Extension - Nike or Shein detected, showing extension");
+    setIsVisible(true);
+
     const loadSafetyData = async () => {
       setIsLoading(true);
       try {
-        const currentUrl = window.location.href; // read inside effect
         const data = await getWebsiteSafety(currentUrl);
         setSafetyData(data);
       } catch (error) {
@@ -101,7 +196,15 @@ const WebsiteSafetyExtension: React.FC = () => {
       }
     };
 
+    const loadMedia = async () => {
+      setMediaLoading(true);
+      // Show loading for 3 seconds to simulate analysis
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      setMediaLoading(false);
+    };
+
     loadSafetyData();
+    loadMedia();
   }, []); // no need to include window.location.href here
 
   const getStatusIcon = (status: SafetyStatus): JSX.Element | null => {
@@ -118,8 +221,39 @@ const WebsiteSafetyExtension: React.FC = () => {
     }
   };
 
+  const getCurrentBrandAssets = () => {
+    const currentUrl = window.location.href;
+    const brand = getCurrentBrand(currentUrl);
+    return brand ? brandAssets[brand] : null;
+  };
 
-  if (!isVisible) return null;
+  const getAllMedia = () => {
+    const assets = getCurrentBrandAssets();
+    if (!assets) return [];
+    return [...assets.images, ...assets.videos];
+  };
+
+  const nextMedia = () => {
+    const allMedia = getAllMedia();
+    setCurrentMediaIndex((prev) => (prev + 1) % allMedia.length);
+  };
+
+  const prevMedia = () => {
+    const allMedia = getAllMedia();
+    setCurrentMediaIndex((prev) => (prev - 1 + allMedia.length) % allMedia.length);
+  };
+
+  const isVideo = (path: string) => path.endsWith('.mp4');
+
+
+  console.log("🎨 Slayy Extension - Render check, isVisible:", isVisible);
+  
+  if (!isVisible) {
+    console.log("👻 Slayy Extension - Not visible, returning null");
+    return null;
+  }
+  
+  console.log("🚀 Slayy Extension - Rendering extension!");
 
   const containerStyle: React.CSSProperties = {
     position: 'fixed',
@@ -248,7 +382,7 @@ const WebsiteSafetyExtension: React.FC = () => {
       <div style={contentStyle}>
         {/* Safety Section */}
         <div style={sectionStyle}>
-          <div style={titleStyle}>Website Safety</div>
+          <div style={titleStyle}>Shopping Safety</div>
           {isLoading ? (
             <div style={{ color: '#6b7280' }}>Loading safety data...</div>
           ) : safetyData ? (
@@ -281,23 +415,147 @@ const WebsiteSafetyExtension: React.FC = () => {
           )}
         </div>
 
-        {/* Image Section */}
+        {/* Media Section */}
         <div style={sectionStyle}>
-          <div style={titleStyle}>Check if you are going to slay in it:</div>
-          <div style={uploadAreaStyle}>
-            <ImageIcon style={{ width: '32px', height: '32px', marginBottom: '8px' }} />
-            <span style={{ fontSize: '12px' }}>Upload image</span>
+          <div style={titleStyle}>Style Check - Will you slay in this?</div>
+          <div style={{ textAlign: 'center' }}>
+            {(() => {
+              const allMedia = getAllMedia();
+              const currentMedia = allMedia[currentMediaIndex];
+              
+              return (
+                <div style={{ position: 'relative' }}>
+                  {/* Media container with shimmer loading */}
+                  <div style={{
+                    width: '200px',
+                    height: '200px',
+                    borderRadius: '8px',
+                    border: '2px solid #e5e7eb',
+                    margin: '0 auto',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    {/* Shimmer loading overlay */}
+                    {mediaLoading && (
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+                        backgroundSize: '200% 100%',
+                        animation: 'shimmer 1.5s infinite',
+                        borderRadius: '6px'
+                      }}></div>
+                    )}
+                    
+                    {/* Actual media */}
+                    {!mediaLoading && currentMedia && (
+                      <>
+                        {isVideo(currentMedia) ? (
+                          <video
+                            src={currentMedia}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                              borderRadius: '6px'
+                            }}
+                            controls
+                            autoPlay
+                            muted
+                            loop
+                          />
+                        ) : (
+                          <img
+                            src={currentMedia}
+                            alt="Style preview"
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                              borderRadius: '6px'
+                            }}
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* Navigation buttons */}
+                  {!mediaLoading && allMedia.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevMedia}
+                        style={{
+                          position: 'absolute',
+                          left: '-20px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          border: 'none',
+                          backgroundColor: 'rgba(0,0,0,0.7)',
+                          color: 'white',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '16px'
+                        }}
+                      >
+                        ‹
+                      </button>
+                      <button
+                        onClick={nextMedia}
+                        style={{
+                          position: 'absolute',
+                          right: '-20px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          border: 'none',
+                          backgroundColor: 'rgba(0,0,0,0.7)',
+                          color: 'white',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '16px'
+                        }}
+                      >
+                        ›
+                      </button>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+            
+            {/* Media counter */}
+            {!mediaLoading && (
+              <div style={{ marginTop: '8px', fontSize: '12px', color: '#6b7280' }}>
+                {(() => {
+                  const allMedia = getAllMedia();
+                  return `${currentMediaIndex + 1} of ${allMedia.length}`;
+                })()}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Insights Section */}
         <div style={sectionStyle}>
-          <div style={titleStyle}>Slayy's personal advice</div>
+          <div style={titleStyle}>Slayy's Shopping Advice</div>
           <div style={insightsListStyle}>
-            <div>• Personalized safety recommendations</div>
-            <div>• Style and reputation insights</div>
-            <div>• Smart shopping guidance</div>
-            <div>• Trust score analysis</div>
+            <div>• Price comparison analysis</div>
+            <div>• Quality vs value assessment</div>
+            <div>• Style compatibility check</div>
+            <div>• Brand reputation insights</div>
           </div>
         </div>
       </div>
